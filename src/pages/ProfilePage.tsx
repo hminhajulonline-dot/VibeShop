@@ -22,42 +22,45 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 
 export const ProfilePage: React.FC = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders');
 
   useEffect(() => {
-    if (!user) {
-      navigate('/');
+    if (!authLoading && !user) {
+      navigate('/login', { state: { from: location } });
       return;
     }
 
-    const fetchOrders = async () => {
-      try {
-        const q = query(
-          collection(db, 'orders'),
-          where('userId', '==', user.uid),
-          orderBy('createdAt', 'desc')
-        );
-        const querySnapshot = await getDocs(q);
-        setOrders(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[]);
-      } catch (err) {
-        console.error('Error fetching user orders:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (user) {
+      const fetchOrders = async () => {
+        try {
+          const q = query(
+            collection(db, 'orders'),
+            where('userId', '==', user.uid),
+            orderBy('createdAt', 'desc')
+          );
+          const querySnapshot = await getDocs(q);
+          setOrders(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[]);
+        } catch (err) {
+          console.error('Error fetching user orders:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    fetchOrders();
-  }, [user, navigate]);
+      fetchOrders();
+    }
+  }, [user, authLoading, navigate, location]);
 
   const handleLogout = async () => {
     await signOut(auth);

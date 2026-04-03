@@ -10,6 +10,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   signOut: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   isAdmin: false,
   signOut: async () => {},
+  signInWithGoogle: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -27,6 +29,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     await firebaseSignOut(auth);
+  };
+
+  const signInWithGoogle = async () => {
+    const { signInWithPopup, GoogleAuthProvider } = await import('firebase/auth');
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
   };
 
   useEffect(() => {
@@ -64,7 +72,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       profile, 
       loading, 
       isAdmin: profile?.role === 'admin' || user?.email === "hminhajulonline@gmail.com", 
-      signOut 
+      signOut,
+      signInWithGoogle
     }}>
       {children}
     </AuthContext.Provider>

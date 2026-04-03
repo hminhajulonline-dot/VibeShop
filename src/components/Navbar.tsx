@@ -153,13 +153,13 @@ export const Navbar: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => 
                 </AnimatePresence>
               </div>
             ) : (
-              <button
-                onClick={handleLogin}
+              <Link
+                to="/login"
                 className="flex flex-col items-center p-2 text-gray-600 hover:text-primary transition-colors"
               >
                 <User className="w-5 h-5" />
                 <span className="text-[10px] font-bold mt-1">Sign In</span>
-              </button>
+              </Link>
             )}
 
             <Link to="/wishlist" className="flex flex-col items-center p-2 text-gray-600 hover:text-primary transition-colors">
@@ -283,13 +283,14 @@ export const Navbar: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => 
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={handleLogin}
+                <Link
+                  to="/login"
+                  onClick={() => setIsMenuOpen(false)}
                   className="w-full flex items-center justify-center space-x-2 p-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20"
                 >
                   <User className="w-5 h-5" />
                   <span>Login with Google</span>
-                </button>
+                </Link>
               )}
             </div>
           </motion.div>

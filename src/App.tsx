@@ -32,6 +32,7 @@ import { WishlistPage } from './pages/WishlistPage';
 import { ProductPage } from './pages/ProductPage';
 import { StaticPage } from './pages/StaticPage';
 import { CheckoutPage } from './pages/CheckoutPage';
+import { LoginPage } from './pages/LoginPage';
 
 const INITIAL_PRODUCTS: Omit<Product, 'id'>[] = [
   {
@@ -599,6 +600,7 @@ export default function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/wishlist" element={<WishlistPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/login" element={<LoginPage />} />
               
               {/* Static Pages */}
               <Route path="/about-us" element={<StaticPage title="About Us" content={ABOUT_US} settingsKey="aboutUs" />} />

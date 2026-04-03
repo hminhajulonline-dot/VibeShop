@@ -192,6 +192,26 @@ export function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left Side: Form */}
           <div className="lg:col-span-7 space-y-8">
+            {!user && (
+              <div className="bg-primary/5 border border-primary/10 p-6 rounded-[2rem] flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+                    <User className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900">Already have an account?</h4>
+                    <p className="text-sm text-gray-500">Sign in to track your orders and checkout faster.</p>
+                  </div>
+                </div>
+                <Link 
+                  to="/login" 
+                  state={{ from: { pathname: '/checkout' } }}
+                  className="px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                >
+                  Sign In
+                </Link>
+              </div>
+            )}
             <section className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
               <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center">
                 <MapPin className="w-5 h-5 mr-2 text-primary" /> Shipping Details
