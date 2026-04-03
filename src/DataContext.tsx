@@ -58,6 +58,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let fetchedProducts = productsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
       let fetchedCategories = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Category[];
 
+      // Deduplicate categories by name to prevent duplicate keys and UI items
+      const uniqueCategoryNames = new Set();
+      fetchedCategories = fetchedCategories.filter(cat => {
+        if (uniqueCategoryNames.has(cat.name)) return false;
+        uniqueCategoryNames.add(cat.name);
+        return true;
+      });
+
       // Seed categories if empty
       if (categoriesSnap.empty) {
         const defaultCategories = ['Honey', 'Oil', 'Ghee', 'Dessert', 'Dates', 'Nuts'];

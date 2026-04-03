@@ -217,7 +217,7 @@ export const Navbar: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => 
           <div className="flex items-center justify-center space-x-8 h-10 overflow-x-auto no-scrollbar">
             {categories.map((cat) => (
               <Link
-                key={cat.name}
+                key={cat.id}
                 to={`/category/${cat.name.toLowerCase()}`}
                 className="text-[11px] font-bold uppercase tracking-wider hover:text-secondary transition-colors whitespace-nowrap"
               >
