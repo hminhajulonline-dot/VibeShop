@@ -60,11 +60,12 @@ service cloud.firestore {
     }
 
     function isValidSettings(data) {
-      return data.keys().hasAll(['siteName', 'logo', 'headerText', 'footerText', 'contactEmail', 'contactPhone', 'metaTitle', 'metaDescription', 'slides', 'socialLinks']) &&
+      return data.keys().hasAll(['siteName', 'logo', 'headerText', 'footerText', 'contactEmail', 'contactPhone', 'metaTitle', 'metaDescription', 'slides', 'socialLinks', 'brands']) &&
              data.siteName is string &&
              data.logo is string &&
              data.slides is list &&
-             data.socialLinks is list;
+             data.socialLinks is list &&
+             data.brands is list;
     }
 
     function isValidReview(data) {

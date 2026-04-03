@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { collection, getDocs, query, orderBy, addDoc } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, handleFirestoreError, OperationType } from './firebase';
 import { Product, Category } from './types';
 
 interface DataContextType {
@@ -52,10 +52,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     setError(null);
     try {
-      const [productsSnap, categoriesSnap] = await Promise.all([
-        getDocs(collection(db, 'products')),
-        getDocs(query(collection(db, 'categories'), orderBy('order', 'asc')))
-      ]);
+      const productsSnap = await getDocs(collection(db, 'products'));
+      const categoriesSnap = await getDocs(query(collection(db, 'categories'), orderBy('order', 'asc')));
 
       let fetchedProducts = productsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
       let fetchedCategories = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Category[];
@@ -92,7 +90,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCategories(fetchedCategories);
     } catch (err) {
       console.error('Error fetching data:', err);
-      setError('Failed to load data.');
+      setError(`Failed to load data: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setLoading(false);
     }
