@@ -1,0 +1,124 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields: uid, email, displayName, photoURL, role, createdAt
+    //
+    // Collection: products
+    // Fields: name, description, price, image, category, stock, featured
+    //
+    // Collection: orders
+    // Fields: userId, items, total, status, createdAt
+    //
+    // Collection: settings
+    // Fields: siteName, logo, headerText, footerText, contactEmail, contactPhone, metaTitle, metaDescription, metaPixelId, slides, socialLinks
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        ((request.auth.token.email == "hminhajulonline@gmail.com" && request.auth.token.email_verified == true) ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role', 'createdAt']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.role in ['admin', 'customer'];
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll(['name', 'price', 'image', 'category', 'stock']) &&
+             data.name is string && data.name.size() < 200 &&
+             data.price is number && data.price >= 0 &&
+             data.stock is int && data.stock >= 0;
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll(['userId', 'items', 'total', 'status', 'createdAt', 'customerInfo']) &&
+             data.userId == request.auth.uid &&
+             data.items is list &&
+             data.total is number &&
+             data.status in ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'] &&
+             data.customerInfo is map &&
+             data.customerInfo.keys().hasAll(['name', 'email', 'phone', 'address', 'city']);
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasAll(['siteName', 'logo', 'headerText', 'footerText', 'contactEmail', 'contactPhone', 'metaTitle', 'metaDescription', 'slides', 'socialLinks']) &&
+             data.siteName is string &&
+             data.logo is string &&
+             data.slides is list &&
+             data.socialLinks is list;
+    }
+
+    function isValidReview(data) {
+      return data.keys().hasAll(['productId', 'userId', 'userName', 'rating', 'comment', 'createdAt']) &&
+             data.productId is string &&
+             data.userId == request.auth.uid &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.comment is string && data.comment.size() < 1000;
+    }
+
+    // Rules
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'customer' || isAdmin());
+      allow update: if (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidProduct(request.resource.data);
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /coupons/{couponId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow list: if true;
+      allow create: if isAuthenticated() && isValidReview(request.resource.data);
+      allow update, delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+    }
+
+    match /orders/{orderId} {
+      allow get: if true; // Publicly track by ID
+      allow list: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidOrder(request.resource.data);
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidSettings(request.resource.data);
+    }
+
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

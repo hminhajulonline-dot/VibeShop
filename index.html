@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Google AI Studio App</title>
+    <script>
+      (function() {
+        // 1. Attempt to make fetch assignment a no-op
+        try {
+          const originalFetch = window.fetch;
+          Object.defineProperty(window, 'fetch', {
+            get: () => originalFetch,
+            set: () => { /* ignore */ },
+            configurable: true
+          });
+        } catch (e) {
+          // Ignore if not configurable
+        }
+
+        // 2. Suppress console.error
+        const originalError = console.error;
+        console.error = (...args) => {
+          const message = args[0];
+          if (typeof message === 'string' && (
+            message.includes('Cannot set property fetch of #<Window>') ||
+            message.includes('fetch of #<Window> which has only a getter')
+          )) {
+            return;
+          }
+          originalError.apply(console, args);
+        };
+
+        // 3. Suppress unhandled runtime errors
+        window.addEventListener('error', (event) => {
+          if (event.message && (
+            event.message.includes('Cannot set property fetch of #<Window>') ||
+            event.message.includes('fetch of #<Window> which has only a getter')
+          )) {
+            event.preventDefault();
+          }
+        });
+
+        // 4. Suppress unhandled rejections
+        window.addEventListener('unhandledrejection', (event) => {
+          if (event.reason && event.reason.message && (
+            event.reason.message.includes('Cannot set property fetch of #<Window>') ||
+            event.reason.message.includes('fetch of #<Window> which has only a getter')
+          )) {
+            event.preventDefault();
+          }
+        });
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

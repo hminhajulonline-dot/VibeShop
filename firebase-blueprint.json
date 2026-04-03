@@ -1,0 +1,88 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "customer"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "E-commerce product details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "oldPrice": { "type": "number" },
+        "image": { "type": "string" },
+        "category": { "type": "string" },
+        "stock": { "type": "integer" },
+        "featured": { "type": "boolean" },
+        "badge": { "type": "string" },
+        "brand": { "type": "string" }
+      },
+      "required": ["name", "price", "image", "category", "stock"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "cancelled", "received", "returned"] },
+        "createdAt": { "type": "string" },
+        "customerInfo": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "email": { "type": "string" },
+            "phone": { "type": "string" },
+            "address": { "type": "string" },
+            "city": { "type": "string" },
+            "zipCode": { "type": "string" },
+            "billingAddress": { "type": "string" }
+          },
+          "required": ["name", "email", "phone", "address", "city"]
+        }
+      },
+      "required": ["userId", "items", "total", "status", "createdAt", "customerInfo"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Global site configuration",
+      "type": "object",
+      "properties": {
+        "siteName": { "type": "string" },
+        "logo": { "type": "string" },
+        "headerText": { "type": "string" },
+        "footerText": { "type": "string" },
+        "contactEmail": { "type": "string" },
+        "contactPhone": { "type": "string" },
+        "metaTitle": { "type": "string" },
+        "metaDescription": { "type": "string" },
+        "metaPixelId": { "type": "string" },
+        "slides": { "type": "array" },
+        "socialLinks": { "type": "array" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "User profiles" },
+    "/products/{productId}": { "schema": "Product", "description": "Product catalog" },
+    "/orders/{orderId}": { "schema": "Order", "description": "Customer orders" },
+    "/settings/global": { "schema": "Settings", "description": "Global site settings" }
+  }
+}
