@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import { Product, Review } from '../types';
 import { useCart } from '../CartContext';
 import { useAuth } from '../AuthContext';
+import { useData } from '../DataContext';
 import { Navbar } from '../components/Navbar';
 import { CartDrawer } from '../components/CartDrawer';
 import { ProductCard } from '../components/ProductCard';
@@ -30,6 +31,7 @@ import { cn } from '../lib/utils';
 
 export const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { products } = useData();
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -52,6 +54,12 @@ export const ProductPage: React.FC = () => {
       if (!id) return;
       setLoading(true);
       try {
+        // First try to find in context for instant load
+        const localProduct = products.find(p => p.id === id);
+        if (localProduct) {
+          setProduct(localProduct);
+        }
+
         const docRef = doc(db, 'products', id);
         const docSnap = await getDoc(docRef);
 
@@ -79,12 +87,12 @@ export const ProductPage: React.FC = () => {
           const reviewsSnapshot = await getDocs(reviewsQ);
           const reviewsList = reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
           setReviews(reviewsList);
-        } else {
+        } else if (!localProduct) {
           setError('Product not found');
         }
       } catch (err) {
         console.error('Error fetching product:', err);
-        setError('Failed to load product details');
+        if (!product) setError('Failed to load product details');
       } finally {
         setLoading(false);
       }
@@ -92,7 +100,7 @@ export const ProductPage: React.FC = () => {
 
     fetchProductData();
     window.scrollTo(0, 0);
-  }, [id]);
+  }, [id, products]);
 
   const handleAddToCart = () => {
     if (product) {

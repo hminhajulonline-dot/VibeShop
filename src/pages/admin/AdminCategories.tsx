@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Category } from '../../types';
+import { useData } from '../../DataContext';
 import { 
   Plus, 
   Edit2, 
@@ -16,6 +17,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 
 export const AdminCategories: React.FC = () => {
+  const { refreshData } = useData();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -75,6 +77,7 @@ export const AdminCategories: React.FC = () => {
       }
       setIsModalOpen(false);
       fetchCategories();
+      refreshData();
     } catch (err) {
       console.error('Error saving category:', err);
     }
@@ -85,6 +88,7 @@ export const AdminCategories: React.FC = () => {
     try {
       await deleteDoc(doc(db, 'categories', id));
       fetchCategories();
+      refreshData();
     } catch (err) {
       console.error('Error deleting category:', err);
     }
@@ -105,6 +109,7 @@ export const AdminCategories: React.FC = () => {
         updateDoc(doc(db, 'categories', cat.id), { order: i })
       ));
       fetchCategories();
+      refreshData();
     } catch (err) {
       console.error('Error reordering categories:', err);
     }

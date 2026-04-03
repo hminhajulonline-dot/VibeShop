@@ -5,34 +5,20 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../AuthContext';
 import { useCart } from '../CartContext';
 import { useSettings } from '../SettingsContext';
-import { auth, db } from '../firebase';
+import { useData } from '../DataContext';
+import { auth } from '../firebase';
 import { signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { cn } from '../lib/utils';
-import { Category } from '../types';
 
 export const Navbar: React.FC<{ onCartOpen: () => void }> = ({ onCartOpen }) => {
   const { user, profile, isAdmin } = useAuth();
   const { totalItems } = useCart();
   const { settings } = useSettings();
+  const { categories } = useData();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const q = query(collection(db, 'categories'), orderBy('order', 'asc'));
-        const querySnapshot = await getDocs(q);
-        setCategories(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Category[]);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   const handleLogin = async () => {
     const provider = new GoogleAuthProvider();

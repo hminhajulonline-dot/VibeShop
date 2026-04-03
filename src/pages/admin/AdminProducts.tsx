@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Product, Category } from '../../types';
+import { useData } from '../../DataContext';
 import { 
   Plus, 
   Search, 
@@ -17,6 +18,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 
 export const AdminProducts: React.FC = () => {
+  const { refreshData } = useData();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,6 +108,7 @@ export const AdminProducts: React.FC = () => {
       }
       setIsModalOpen(false);
       fetchData();
+      refreshData();
     } catch (err) {
       console.error('Error saving product:', err);
     }
@@ -122,6 +125,7 @@ export const AdminProducts: React.FC = () => {
     try {
       await deleteDoc(doc(db, 'products', deleteConfirmId));
       fetchData();
+      refreshData();
     } catch (err) {
       console.error('Error deleting product:', err);
     } finally {

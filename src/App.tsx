@@ -6,6 +6,7 @@ import { Product, Category } from './types';
 import { AuthProvider, useAuth } from './AuthContext';
 import { CartProvider } from './CartContext';
 import { SettingsProvider, useSettings } from './SettingsContext';
+import { DataProvider, useData } from './DataContext';
 import { Navbar } from './components/Navbar';
 import { ProductCard } from './components/ProductCard';
 import { CartDrawer } from './components/CartDrawer';
@@ -250,52 +251,11 @@ const TESTIMONIALS = [
 ];
 
 function HomePage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { products, categories, loading, error } = useData();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
   const [currentSlide, setCurrentSlide] = useState(0);
   const { settings } = useSettings();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const [productsSnap, categoriesSnap] = await Promise.all([
-          getDocs(collection(db, 'products')),
-          getDocs(query(collection(db, 'categories'), orderBy('order', 'asc')))
-        ]);
-
-        if (productsSnap.empty) {
-          const seededProducts: Product[] = [];
-          for (const p of INITIAL_PRODUCTS) {
-            const docRef = await addDoc(collection(db, 'products'), p);
-            seededProducts.push({ ...p, id: docRef.id });
-          }
-          setProducts(seededProducts);
-        } else {
-          setProducts(productsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[]);
-        }
-
-        setCategories(categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Category[]);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to load products. Please check your connection or try again later.');
-        try {
-          handleFirestoreError(err, OperationType.LIST, 'products');
-        } catch (e) {
-          // Error is already logged by handleFirestoreError
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const filteredProducts = activeCategory === 'All' 
     ? products 
@@ -627,9 +587,10 @@ export default function App() {
     <Router>
       <AuthProvider>
         <SettingsProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <Routes>
+          <DataProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/category/:categoryName" element={<CategoryPage />} />
               <Route path="/product/:id" element={<ProductPage />} />
@@ -667,8 +628,9 @@ export default function App() {
             </Routes>
           </CartProvider>
         </WishlistProvider>
-      </SettingsProvider>
-    </AuthProvider>
-  </Router>
+      </DataProvider>
+    </SettingsProvider>
+  </AuthProvider>
+</Router>
   );
 }
